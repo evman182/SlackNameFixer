@@ -91,7 +91,7 @@ namespace SlackNameFixer.Controllers
 
             await _nameFixerContext.SaveChangesAsync();
 
-            return Ok("Successfully Authorized App");
+            return Ok("Successfully Authorized App. Return to slack and use the \"/set_preferred_name\" command to set your Preferred Name");
         }
     }
 }

@@ -11,6 +11,9 @@ namespace SlackNameFixer.Controllers
     {
         private static readonly Regex EuroNameFormatRegex = new Regex(Constants.EuroNameFormatRegexString, RegexOptions.Compiled);
 
+        private const string RegistrationLink =
+            "<https://slack.com/oauth/v2/authorize?client_id=34873463795.2439460978368&scope=commands&user_scope=users:read,users.profile:write|Click here to register>";
+
         private readonly ILogger<UsersController> _logger;
         private readonly SlackNameFixerContext _nameFixerContext;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -32,7 +35,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok("You are not registered with Slack Name Fixer");
+                return Ok($"You are not registered with Slack Name Fixer. {RegistrationLink}");
             }
 
             if (string.IsNullOrWhiteSpace(user.PreferredFullName))
@@ -52,7 +55,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok("You are not registered with Slack Name Fixer");
+                return Ok($"You are not registered with Slack Name Fixer. {RegistrationLink}");
             }
 
 
