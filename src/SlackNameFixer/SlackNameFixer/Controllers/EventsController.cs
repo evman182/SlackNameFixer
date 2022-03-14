@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using SlackNameFixer.Infrastructure;
 using SlackNameFixer.Persistence;
@@ -12,7 +11,6 @@ namespace SlackNameFixer.Controllers
     [Route("[controller]")]
     public class EventsController : ControllerBase
     {
-        private static readonly Regex EuroNameFormatRegex = new Regex(Constants.EuroNameFormatRegexString, RegexOptions.Compiled);
 
         private readonly ILogger<EventsController> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -53,27 +51,28 @@ namespace SlackNameFixer.Controllers
                 if (eventType == "user_change")
                 {
                     var userEntity = eventBody.GetProperty("user");
-                    var realNameNormalized = userEntity.GetProperty("profile").GetProperty("real_name_normalized")
+                    var realName = userEntity.GetProperty("profile").GetProperty("real_name")
                         .GetString();
 
-                    if (realNameNormalized != null && EuroNameFormatRegex.IsMatch(realNameNormalized))
-                    {
-                        var teamId = userEntity.GetProperty("team_id").GetString();
-                        var userId = userEntity.GetProperty("id").GetString();
+                    var teamId = userEntity.GetProperty("team_id").GetString();
+                    var userId = userEntity.GetProperty("id").GetString();
 
-                        var user = 
-                            _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
-                        if (user != null && !string.IsNullOrWhiteSpace(user.PreferredFullName))
-                        {
-                            var client = _httpClientFactory.CreateClient();
-                            var message = new HttpRequestMessage(
-                                HttpMethod.Post,
-                                "https://slack.com/api/users.profile.set");
-                            message.Content =
-                                JsonContent.Create(new { name = "real_name", value = user.PreferredFullName });
-                            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", user.AccessToken);
-                            await client.SendAsync(message);
-                        }
+                    var user =
+                        _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
+
+                    if (realName != null && 
+                        user != null &&
+                        !string.IsNullOrWhiteSpace(user.PreferredFullName) &&
+                        realName != user.PreferredFullName)
+                    {
+                        var client = _httpClientFactory.CreateClient();
+                        var message = new HttpRequestMessage(
+                            HttpMethod.Post,
+                            "https://slack.com/api/users.profile.set");
+                        message.Content =
+                            JsonContent.Create(new { name = "real_name", value = user.PreferredFullName });
+                        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", user.AccessToken);
+                        await client.SendAsync(message);
                     }
 
                     return Ok();
