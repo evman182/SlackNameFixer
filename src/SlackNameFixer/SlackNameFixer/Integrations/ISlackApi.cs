@@ -4,5 +4,5 @@ public interface ISlackApi
 {
     Task<OAuthExchangeResult> ExchangeForToken(string code);
 
-    Task UpdateUserFullName(string accessToken, string fullName);
+    Task<bool> TryUpdateUserFullName(string accessToken, string fullName);
 }

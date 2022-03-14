@@ -70,7 +70,7 @@ public class SlackApi : ISlackApi
         };
     }
 
-    public async Task UpdateUserFullName(string accessToken, string fullName)
+    public async Task<bool> TryUpdateUserFullName(string accessToken, string fullName)
     {
         var client = _httpClientFactory.CreateClient();
         var message = new HttpRequestMessage(
@@ -79,6 +79,10 @@ public class SlackApi : ISlackApi
         message.Content =
             JsonContent.Create(new { name = "real_name", value = fullName });
         message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        await client.SendAsync(message);
+        var result = await client.SendAsync(message);
+        var responseBody = await result.Content.ReadAsStringAsync();
+        var parsedResponse = JsonDocument.Parse(responseBody);
+        var isOk = parsedResponse.RootElement.GetProperty("ok").GetBoolean();
+        return isOk;
     }
 }

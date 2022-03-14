@@ -57,9 +57,15 @@ namespace SlackNameFixer.Controllers
             }
 
             var trimmedName = text.Trim();
+            var canUpdate = await _slackApi.TryUpdateUserFullName(user.AccessToken, trimmedName);
+
+            if (!canUpdate)
+            {
+                return Ok($"Preferred Name cannot be set to {trimmedName}");
+            }
+
             user.PreferredFullName = trimmedName;
             await _nameFixerContext.SaveChangesAsync();
-            await _slackApi.UpdateUserFullName(user.AccessToken, trimmedName);
 
             return Ok($"Preferred Name is now set to `{trimmedName}`");
         }
