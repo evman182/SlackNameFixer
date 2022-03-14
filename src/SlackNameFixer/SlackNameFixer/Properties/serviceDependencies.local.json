@@ -1,13 +1,3 @@
 {
-  "dependencies": {
-    "secrets1": {
-      "type": "secrets.user"
-    },
-    "mssql1": {
-      "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/slacknamefixerdbserver/databases/SlackNameFixer_db",
-      "type": "mssql.azure",
-      "connectionId": "ConnectionStrings"
-    }
-  }
+  "dependencies": {}
 }
