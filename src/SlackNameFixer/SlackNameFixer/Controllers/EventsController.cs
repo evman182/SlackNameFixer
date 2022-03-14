@@ -3,13 +3,14 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using SlackNameFixer.Infrastructure;
 using SlackNameFixer.Persistence;
 
 namespace SlackNameFixer.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class EventsController : SlackControllerBase
+    public class EventsController : ControllerBase
     {
         private static readonly Regex EuroNameFormatRegex = new Regex(Constants.EuroNameFormatRegexString, RegexOptions.Compiled);
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SlackNameFixer;
+namespace SlackNameFixer.Infrastructure;
 
 public class VerifySlackRequestSignatureAttribute : TypeFilterAttribute
 {

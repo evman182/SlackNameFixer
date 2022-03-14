@@ -1,4 +1,4 @@
-﻿namespace SlackNameFixer;
+﻿namespace SlackNameFixer.Infrastructure;
 
 public static class Constants
 {

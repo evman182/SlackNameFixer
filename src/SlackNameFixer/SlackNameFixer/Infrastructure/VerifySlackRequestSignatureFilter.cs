@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 
-namespace SlackNameFixer;
+namespace SlackNameFixer.Infrastructure;
 
 public class VerifySlackRequestSignatureFilter : IAsyncActionFilter
 {

@@ -3,13 +3,14 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SlackNameFixer.Infrastructure;
 using SlackNameFixer.Persistence;
 
 namespace SlackNameFixer.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class OauthController : SlackControllerBase
+    public class OauthController : ControllerBase
     {
 
         private readonly ILogger<OauthController> _logger;

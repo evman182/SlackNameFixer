@@ -1,12 +1,13 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
+using SlackNameFixer.Infrastructure;
 using SlackNameFixer.Persistence;
 
 namespace SlackNameFixer.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UsersController : SlackControllerBase
+    public class UsersController : ControllerBase
     {
         private static readonly Regex EuroNameFormatRegex = new Regex(Constants.EuroNameFormatRegexString, RegexOptions.Compiled);
 

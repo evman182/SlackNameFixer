@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SlackNameFixer;
+using SlackNameFixer.Infrastructure;
 using SlackNameFixer.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +27,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/errors");
+    app.UseExceptionHandler("/error");
 }
 
 app.UseAuthorization();
