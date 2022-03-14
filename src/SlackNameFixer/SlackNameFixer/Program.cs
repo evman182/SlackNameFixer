@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SlackNameFixer;
 using SlackNameFixer.Infrastructure;
+using SlackNameFixer.Integrations;
 using SlackNameFixer.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,7 @@ builder.Host.ConfigureAppConfiguration((context, _) =>
     builder.Services.Configure<SlackOptions>(context.Configuration.GetSection("SlackOptions"));
 });
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<ISlackApi, SlackApi>();
 builder.Services.AddDbContext<SlackNameFixerContext>(optionsBuilder =>
     optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("slacknamefixerdb")));
 

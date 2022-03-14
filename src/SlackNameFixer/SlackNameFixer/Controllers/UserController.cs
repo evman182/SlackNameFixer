@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SlackNameFixer.Infrastructure;
+using SlackNameFixer.Integrations;
 using SlackNameFixer.Persistence;
 
 namespace SlackNameFixer.Controllers
@@ -12,13 +13,16 @@ namespace SlackNameFixer.Controllers
             "<https://slack.com/oauth/v2/authorize?client_id=34873463795.2439460978368&scope=commands&user_scope=users:read,users.profile:write|Click here to register>";
 
         private readonly ILogger<UsersController> _logger;
+        private readonly ISlackApi _slackApi;
         private readonly SlackNameFixerContext _nameFixerContext;
 
         public UsersController(
             ILogger<UsersController> logger,
+            ISlackApi slackApi,
             SlackNameFixerContext nameFixerContext)
         {
             _logger = logger;
+            _slackApi = slackApi;
             _nameFixerContext = nameFixerContext;
         }
 
@@ -55,6 +59,7 @@ namespace SlackNameFixer.Controllers
             var trimmedName = text.Trim();
             user.PreferredFullName = trimmedName;
             await _nameFixerContext.SaveChangesAsync();
+            await _slackApi.UpdateUserFullName(user.AccessToken, trimmedName);
 
             return Ok($"Preferred Name is now set to `{trimmedName}`");
         }

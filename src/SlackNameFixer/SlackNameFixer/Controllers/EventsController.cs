@@ -1,8 +1,8 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using SlackNameFixer.Infrastructure;
+using SlackNameFixer.Integrations;
 using SlackNameFixer.Persistence;
 
 namespace SlackNameFixer.Controllers
@@ -13,16 +13,16 @@ namespace SlackNameFixer.Controllers
     {
 
         private readonly ILogger<EventsController> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ISlackApi _slackApi;
         private readonly SlackNameFixerContext _nameFixerContext;
 
         public EventsController(
             ILogger<EventsController> logger,
-            IHttpClientFactory httpClientFactory,
+            ISlackApi slackApi,
             SlackNameFixerContext nameFixerContext)
         {
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
+            _slackApi = slackApi;
             _nameFixerContext = nameFixerContext;
         }
 
@@ -65,14 +65,7 @@ namespace SlackNameFixer.Controllers
                         !string.IsNullOrWhiteSpace(user.PreferredFullName) &&
                         realName != user.PreferredFullName)
                     {
-                        var client = _httpClientFactory.CreateClient();
-                        var message = new HttpRequestMessage(
-                            HttpMethod.Post,
-                            "https://slack.com/api/users.profile.set");
-                        message.Content =
-                            JsonContent.Create(new { name = "real_name", value = user.PreferredFullName });
-                        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", user.AccessToken);
-                        await client.SendAsync(message);
+                        await _slackApi.UpdateUserFullName(user.AccessToken, user.PreferredFullName);
                     }
 
                     return Ok();
