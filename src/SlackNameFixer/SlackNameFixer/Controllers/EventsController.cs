@@ -65,7 +65,12 @@ namespace SlackNameFixer.Controllers
                         !string.IsNullOrWhiteSpace(user.PreferredFullName) &&
                         realName != user.PreferredFullName)
                     {
-                        await _slackApi.TryUpdateUserFullName(user.AccessToken, user.PreferredFullName);
+                       var updateResult = await _slackApi.TryUpdateUserFullName(user.AccessToken, user.PreferredFullName);
+                       if (updateResult == UpdateUserFullNameResult.InvalidToken)
+                       {
+                           _nameFixerContext.Remove(user); 
+                           await _nameFixerContext.SaveChangesAsync();
+                       }
                     }
 
                     return Ok();

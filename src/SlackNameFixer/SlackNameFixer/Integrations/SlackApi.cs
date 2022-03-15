@@ -70,7 +70,7 @@ public class SlackApi : ISlackApi
         };
     }
 
-    public async Task<bool> TryUpdateUserFullName(string accessToken, string fullName)
+    public async Task<UpdateUserFullNameResult> TryUpdateUserFullName(string accessToken, string fullName)
     {
         var client = _httpClientFactory.CreateClient();
         var message = new HttpRequestMessage(
@@ -83,6 +83,35 @@ public class SlackApi : ISlackApi
         var responseBody = await result.Content.ReadAsStringAsync();
         var parsedResponse = JsonDocument.Parse(responseBody);
         var isOk = parsedResponse.RootElement.GetProperty("ok").GetBoolean();
-        return isOk;
+        if (!isOk)
+        {
+            var error = parsedResponse.RootElement.GetProperty("error").GetString();
+
+            _logger.LogInformation("UpdateResponse: {response}", responseBody);
+            switch (error)
+            {
+                case "token_revoked":
+                case "token_expired":
+                    return UpdateUserFullNameResult.InvalidToken;
+
+                case "invalid_name_specials":
+                    return UpdateUserFullNameResult.InvalidName;
+
+                default:
+                    return UpdateUserFullNameResult.OtherError;
+
+            }
+        }
+        return UpdateUserFullNameResult.Ok;
     }
+}
+
+
+
+public enum UpdateUserFullNameResult
+{
+    Ok,
+    InvalidName,
+    InvalidToken,
+    OtherError
 }

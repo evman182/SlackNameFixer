@@ -33,7 +33,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok($"You are not registered with Slack Name Fixer. {RegistrationLink}");
+                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {RegistrationLink}");
             }
 
             if (string.IsNullOrWhiteSpace(user.PreferredFullName))
@@ -50,24 +50,39 @@ namespace SlackNameFixer.Controllers
         [HttpPost("set_preferred_name")]
         public async Task<ActionResult> SetPreferredName([FromForm(Name = "user_id")] string userId, [FromForm(Name = "team_id")] string teamId, [FromForm] string text)
         {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return Ok("You cannot send an empty value for Preferred Name");
+            }
+
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok($"You are not registered with Slack Name Fixer. {RegistrationLink}");
+                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {RegistrationLink}");
             }
 
             var trimmedName = text.Trim();
-            var canUpdate = await _slackApi.TryUpdateUserFullName(user.AccessToken, trimmedName);
+            var updateResult = await _slackApi.TryUpdateUserFullName(user.AccessToken, trimmedName);
 
-            if (!canUpdate)
+            switch (updateResult)
             {
-                return Ok($"Preferred Name cannot be set to {trimmedName}");
+                case UpdateUserFullNameResult.InvalidToken:
+                    _nameFixerContext.Remove(user);
+                    await _nameFixerContext.SaveChangesAsync();
+                    return Ok($"Your registration with Slack Name Fixer has expired. {RegistrationLink}");
+
+                case UpdateUserFullNameResult.Ok:
+                    user.PreferredFullName = trimmedName;
+                    await _nameFixerContext.SaveChangesAsync();
+                    return Ok($"Preferred Name is now set to `{trimmedName}`");
+
+                case UpdateUserFullNameResult.InvalidName:
+                    return Ok($"Preferred Name cannot be set to {trimmedName}. Please ensure you are not using any special characters.");
+
+                case UpdateUserFullNameResult.OtherError:
+                default:
+                    return Ok($"Error attempting to set Preferred Name to {trimmedName}");
             }
-
-            user.PreferredFullName = trimmedName;
-            await _nameFixerContext.SaveChangesAsync();
-
-            return Ok($"Preferred Name is now set to `{trimmedName}`");
         }
 
 
@@ -79,7 +94,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok($"You are not registered with Slack Name Fixer. {RegistrationLink}");
+                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {RegistrationLink}");
             }
             
             user.PreferredFullName = null;
