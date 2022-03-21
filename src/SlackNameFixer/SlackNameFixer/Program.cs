@@ -26,7 +26,6 @@ else
 {
     builder.Services.AddDbContext<SlackNameFixerContext, SlackNameFixerSqlServerContext>(optionsBuilder =>
         optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("slacknamefixerdb")));
-
 }
 
 var app = builder.Build();
@@ -44,8 +43,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
+var serveWebsite = builder.Configuration.GetSection("ServeWebsite").Get<bool>();
+if (serveWebsite)
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
 
 app.UseAuthorization();
 
