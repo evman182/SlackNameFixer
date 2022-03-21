@@ -15,8 +15,19 @@ builder.Host.ConfigureAppConfiguration((context, _) =>
 });
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ISlackApi, SlackApi>();
-builder.Services.AddDbContext<SlackNameFixerContext>(optionsBuilder =>
-    optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("slacknamefixerdb")));
+
+var dbProvider = builder.Configuration.GetSection("Database:Provider").Get<string>();
+if (dbProvider == "postgres")
+{
+    builder.Services.AddDbContext<SlackNameFixerContext, SlackNameFixerPgsqlContext>(optionsBuilder =>
+        optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("slacknamefixerdb")));
+}
+else
+{
+    builder.Services.AddDbContext<SlackNameFixerContext, SlackNameFixerSqlServerContext>(optionsBuilder =>
+        optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("slacknamefixerdb")));
+
+}
 
 var app = builder.Build();
 

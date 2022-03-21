@@ -3,17 +3,19 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SlackNameFixer.Persistence;
 
 #nullable disable
 
-namespace SlackNameFixer.Migrations
+namespace SlackNameFixer.Migrations.SqlServer
 {
-    [DbContext(typeof(SlackNameFixerContext))]
-    partial class SlackNameFixerContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SlackNameFixerSqlServerContext))]
+    [Migration("20220321202626_InitMigrationSqlServer")]
+    partial class InitMigrationSqlServer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

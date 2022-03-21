@@ -2,11 +2,11 @@
 
 namespace SlackNameFixer.Persistence
 {
-    public class SlackNameFixerContext : DbContext
+    public abstract class SlackNameFixerContext : DbContext
     {
         public DbSet<User> Users { get; set; }
 
-        public SlackNameFixerContext(DbContextOptions<SlackNameFixerContext> options) : base(options)
+        protected SlackNameFixerContext(DbContextOptions options) : base(options)
         {
         }
 
