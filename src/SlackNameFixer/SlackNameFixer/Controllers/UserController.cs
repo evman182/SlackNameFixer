@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SlackNameFixer.Infrastructure;
 using SlackNameFixer.Integrations;
 using SlackNameFixer.Persistence;
@@ -9,21 +10,24 @@ namespace SlackNameFixer.Controllers
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private const string RegistrationLink =
-            "<https://slack.com/oauth/v2/authorize?client_id=34873463795.2439460978368&scope=commands&user_scope=users:read,users.profile:write|Click here to register>";
+        private const string RegistrationLinkTemplate =
+            "<https://slack.com/oauth/v2/authorize?client_id={0}&scope=commands&user_scope=users:read,users.profile:write|Click here to register>";
 
         private readonly ILogger<UsersController> _logger;
         private readonly ISlackApi _slackApi;
         private readonly SlackNameFixerContext _nameFixerContext;
+        private readonly string _registrationLink;
 
         public UsersController(
             ILogger<UsersController> logger,
             ISlackApi slackApi,
+            IOptions<SlackOptions> slackOptions,
             SlackNameFixerContext nameFixerContext)
         {
             _logger = logger;
             _slackApi = slackApi;
             _nameFixerContext = nameFixerContext;
+            _registrationLink = string.Format(RegistrationLinkTemplate, slackOptions.Value.ClientId);
         }
 
         [VerifySlackRequestSignature]
@@ -33,7 +37,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {RegistrationLink}");
+                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {_registrationLink}");
             }
 
             if (string.IsNullOrWhiteSpace(user.PreferredFullName))
@@ -58,7 +62,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {RegistrationLink}");
+                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {_registrationLink}");
             }
 
             var trimmedName = text.Trim();
@@ -69,7 +73,7 @@ namespace SlackNameFixer.Controllers
                 case UpdateUserFullNameResult.InvalidToken:
                     _nameFixerContext.Remove(user);
                     await _nameFixerContext.SaveChangesAsync();
-                    return Ok($"Your registration with Slack Name Fixer has expired. {RegistrationLink}");
+                    return Ok($"Your registration with Slack Name Fixer has expired. {_registrationLink}");
 
                 case UpdateUserFullNameResult.Ok:
                     user.PreferredFullName = trimmedName;
@@ -94,7 +98,7 @@ namespace SlackNameFixer.Controllers
             var user = _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
             if (user == null)
             {
-                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {RegistrationLink}");
+                return Ok($"You are not registered with Slack Name Fixer or your registration has expired. {_registrationLink}");
             }
             
             user.PreferredFullName = null;
