@@ -50,6 +50,8 @@ if (serveWebsite)
     app.UseStaticFiles();
 }
 
+app.UseMiddleware<AppStatusMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
