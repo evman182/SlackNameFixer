@@ -54,11 +54,28 @@ namespace SlackNameFixer.Controllers
                     var realName = userEntity.GetProperty("profile").GetProperty("real_name")
                         .GetString();
 
-                    var teamId = userEntity.GetProperty("team_id").GetString();
+                    List<string> teamIds;
+                    if (userEntity.TryGetProperty("enterprise_user", out var enterpriseUserEntity))
+                    {
+                        var teams = enterpriseUserEntity.GetProperty("teams");
+                        var numTeams = teams.GetArrayLength();
+                        teamIds = new List<string>(numTeams);
+
+                        for (int x = 0; x < numTeams; x++)
+                        {
+                            teamIds.Add(teams[x].GetString());
+                        }
+                    }
+                    else
+                    {
+                        var teamId = userEntity.GetProperty("team_id").GetString();
+                        teamIds = new List<string> { teamId };
+                    }
+                    
                     var userId = userEntity.GetProperty("id").GetString();
 
                     var user =
-                        _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && u.TeamId == teamId);
+                        _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && teamIds.Contains(u.TeamId));
 
                     if (realName != null && 
                         user != null &&
