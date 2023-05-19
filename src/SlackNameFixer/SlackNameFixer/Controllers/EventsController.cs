@@ -50,6 +50,7 @@ namespace SlackNameFixer.Controllers
 
                 if (eventType == "user_change")
                 {
+                    _logger.LogInformation("requestBody: {requestBody}", requestBody);
                     var userEntity = eventBody.GetProperty("user");
                     var realName = userEntity.GetProperty("profile").GetProperty("real_name")
                         .GetString();
@@ -74,15 +75,22 @@ namespace SlackNameFixer.Controllers
                     
                     var userId = userEntity.GetProperty("id").GetString();
 
+                    _logger.LogInformation("teamIds: {teamIds}", string.Join(", ", teamIds));
+
                     var user =
                         _nameFixerContext.Users.SingleOrDefault(u => u.UserId == userId && teamIds.Contains(u.TeamId));
+
+                        
+                    _logger.LogInformation("user: {user}", user != null);
 
                     if (realName != null && 
                         user != null &&
                         !string.IsNullOrWhiteSpace(user.PreferredFullName) &&
                         realName != user.PreferredFullName)
                     {
+                        _logger.LogInformation("TryUpdateUserFullName starting");
                        var updateResult = await _slackApi.TryUpdateUserFullName(user.AccessToken, user.PreferredFullName);
+                       _logger.LogInformation("TryUpdateUserFullName result: {result}", updateResult);
                        if (updateResult == UpdateUserFullNameResult.InvalidToken)
                        {
                            _nameFixerContext.Remove(user); 
