@@ -51,7 +51,7 @@ namespace SlackNameFixer.Controllers
                 var eventBody = parsedRequestBody.RootElement.GetProperty("event");
                 var eventType = eventBody.GetProperty("type").GetString();
                 _logger.LogInformation("Received event: {eventType}", eventType);
-
+                return Ok();
                 if (eventType == "user_change")
                 {
                     var userEntity = eventBody.GetProperty("user");
