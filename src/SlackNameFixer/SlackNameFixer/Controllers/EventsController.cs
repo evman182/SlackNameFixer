@@ -32,6 +32,10 @@ namespace SlackNameFixer.Controllers
         {
 
             string requestBody = await new StreamReader(Request.Body).ReadToEndAsync();
+            if(requestBody.Contains("Evan", StringComparison.InvariantCultureIgnoreCase))
+            {
+                _logger.LogInformation("requestBody: {requestBody}", requestBody);
+            }
             var parsedRequestBody = JsonDocument.Parse(requestBody);
             var requestType = parsedRequestBody.RootElement.GetProperty("type").GetString();
             if (requestType == "url_verification")
@@ -50,7 +54,6 @@ namespace SlackNameFixer.Controllers
 
                 if (eventType == "user_change")
                 {
-                    _logger.LogInformation("requestBody: {requestBody}", requestBody);
                     var userEntity = eventBody.GetProperty("user");
                     var realName = userEntity.GetProperty("profile").GetProperty("real_name")
                         .GetString();
